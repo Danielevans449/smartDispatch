@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Dispatch - Hitung Material</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 16px; }
+    .btn { display: inline-block; padding: 12px 18px; background: #1a73e8; color: #fff;
+           border-radius: 8px; cursor: pointer; margin: 4px 4px 4px 0; }
+    .btn.abu { background: #5f6368; }
+    input[type=file] { display: none; }
+    #preview { width: 100%; margin-top: 12px; border-radius: 8px; }
+    #hasil { margin-top: 12px; font-size: 18px; line-height: 1.6; }
+    .hijau { color: #0a0; } .oranye { color: #e68a00; }
+  </style>
+</head>
+<body>
+  <h2>Hitung Material</h2>
+
+  <label class="btn">Ambil Foto (Kamera)
+    <input type="file" id="kamera" accept="image/*" capture="environment">
+  </label>
+  <label class="btn abu">Pilih dari Galeri
+    <input type="file" id="galeri" accept="image/*">
+  </label>
+
+  <div id="hasil"></div>
+  <img id="preview" alt="">
+
+  <script>
+    const hasil = document.getElementById("hasil");
+    const preview = document.getElementById("preview");
+
+    async function kirim(file) {
+      if (!file) return;
+      hasil.textContent = "Memproses...";
+      preview.src = "";
+      const fd = new FormData();
+      fd.append("image", file);
+      try {
+        const res = await fetch("/api/detect/", { method: "POST", body: fd });
+        const d = await res.json();
+        if (!res.ok) { hasil.textContent = d.error || "Gagal memproses"; return; }
+        preview.src = d.image;
+        hasil.innerHTML =
+          `Total: <b>${d.total}</b><br>` +
+          `<span class="hijau">Steel pipe: ${d.per_jenis.steel_pipe}</span><br>` +
+          `<span class="oranye">Steel hollow: ${d.per_jenis.steel_hollow}</span>`;
+      } catch (e) {
+        hasil.textContent = "Error: " + e;
+      }
+    }
+
+    document.getElementById("kamera").addEventListener("change", e => kirim(e.target.files[0]));
+    document.getElementById("galeri").addEventListener("change", e => kirim(e.target.files[0]));
+  </script>
+</body>
+</html>
