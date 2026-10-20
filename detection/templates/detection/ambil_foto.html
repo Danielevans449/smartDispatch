@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ambil Foto</title>
+<style>
+  :root{--navy:#14304a;--teal:#0b7a75;--bg:#f2f6fa;--box:#e4ecf4;--muted:#6b7c8c}
+  *{box-sizing:border-box;margin:0}
+  body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--navy);
+       min-height:100dvh;max-width:480px;margin:auto;padding-bottom:80px}
+  header{background:#fff;padding:14px 16px;display:flex;align-items:center;gap:12px}
+  header a{color:var(--navy);text-decoration:none;font-size:22px}
+  header h1{font-size:17px}
+  header small{color:var(--muted);font-size:12px}
+  main{padding:16px;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .view{width:100%;aspect-ratio:3/4;border:2px solid var(--navy);border-radius:20px;
+        background:var(--box);overflow:hidden;display:flex;align-items:center;
+        justify-content:center;color:var(--muted);font-size:14px;font-weight:600;
+        text-align:center;padding:12px}
+  .view img{width:100%;height:100%;object-fit:contain;display:none}
+  .view .ic{font-size:34px;margin-bottom:8px}
+  #status{min-height:22px;font-size:14px;font-weight:600;text-align:center}
+  .ctrl{width:100%;display:grid;grid-template-columns:1fr auto 1fr;align-items:center}
+  #galBtn{justify-self:end;margin-right:26px;width:46px;height:46px;border-radius:50%;
+          border:1px solid #cfd9e3;background:#fff;font-size:20px}
+  #shutter{width:76px;height:76px;border-radius:50%;background:#fff;
+           border:8px solid var(--teal)}
+  #shutter:active{transform:scale(.93)}
+  button:disabled{opacity:.5}
+  nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;
+      background:#fff;border-top:1px solid #e1e8ef;display:flex;justify-content:space-around;
+      padding:8px 0 calc(8px + env(safe-area-inset-bottom))}
+  nav a{text-decoration:none;color:var(--muted);font-size:11px;text-align:center;font-weight:600}
+  nav a span{display:block;font-size:20px}
+  nav a.on{color:var(--teal)}
+  .view video{width:100%;height:100%;object-fit:cover;display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="javascript:history.back()">‹</a>
+  <div><h1>Ambil Foto</h1><small>Steel Pipe · Batch 2</small></div>
+</header>
+
+<main>
+    <div class="view">
+        <video id="video" autoplay playsinline muted></video>
+        <img id="preview" alt="">
+        <div id="hint"><div class="ic">📷</div>Arahkan kamera ke tumpukan barang</div>
+    </div>
+
+  <div id="status"></div>
+
+  <div class="ctrl">
+    <button id="galBtn" type="button">🖼️</button>
+    <button id="shutter" type="button" aria-label="Ambil foto"></button>
+    <div></div>
+  </div>
+
+  <input type="file" id="camInput" accept="image/*" capture="environment" hidden>
+  <input type="file" id="galInput" accept="image/*" hidden>
+</main>
+
+<nav>
+  <a href="#"><span>🏠</span>Beranda</a>
+  <a href="#" class="on"><span>🚚</span>Pengirim</a>
+  <a href="#"><span>📦</span>Penerima</a>
+  <a href="#"><span>🕒</span>Riwayat</a>
+  <a href="#"><span>👤</span>Profil</a>
+</nav>
+
+<script>
+const camInput = document.getElementById('camInput');
+const galInput = document.getElementById('galInput');
+const preview  = document.getElementById('preview');
+const video    = document.getElementById('video');
+const hint     = document.getElementById('hint');
+const statusEl = document.getElementById('status');
+const shutter  = document.getElementById('shutter');
+const galBtn   = document.getElementById('galBtn');
+
+let liveOK = false;
+
+async function mulaiKamera() {
+  // di http biasa, mediaDevices nggak ada -> otomatis pakai cara cadangan
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {facingMode: {ideal: 'environment'}},
+      audio: false
+    });
+    video.srcObject = stream;
+    video.style.display = 'block';
+    hint.style.display = 'none';
+    liveOK = true;
+  } catch (e) {
+    liveOK = false;
+  }
+}
+mulaiKamera();
+
+function tampilkan(file) {
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = 'block';
+  video.style.display = 'none';
+  hint.style.display = 'none';
+  kirim(file);
+}
+
+shutter.onclick = () => {
+  if (!liveOK) { camInput.click(); return; }   // cadangan: kamera bawaan HP
+  const c = document.createElement('canvas');
+  c.width = video.videoWidth;
+  c.height = video.videoHeight;
+  c.getContext('2d').drawImage(video, 0, 0);
+  c.toBlob(blob => {
+    tampilkan(new File([blob], 'foto.jpg', {type: 'image/jpeg'}));
+  }, 'image/jpeg', 0.9);
+};
+
+galBtn.onclick = () => galInput.click();
+
+[camInput, galInput].forEach(inp => inp.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  tampilkan(file);
+  inp.value = '';
+}));
+
+// tap foto hasil buat balik ke kamera live
+preview.onclick = () => {
+  if (!liveOK) return;
+  preview.style.display = 'none';
+  video.style.display = 'block';
+  statusEl.textContent = '';
+};
+
+async function kirim(file) {
+  statusEl.textContent = 'Mendeteksi...';
+  shutter.disabled = galBtn.disabled = true;
+
+  const fd = new FormData();
+  fd.append('image', file);
+
+  try {
+    const res = await fetch('/api/detect/', {
+      method: 'POST',
+      body: fd,
+      headers: {'X-CSRFToken': '{{ csrf_token }}'}
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      statusEl.textContent = data.error || 'Terjadi kesalahan di server.';
+      return;
+    }
+
+    if (data.image) preview.src = data.image;
+    statusEl.textContent =
+      `Pipe: ${data.per_jenis.steel_pipe} | Hollow: ${data.per_jenis.steel_hollow} | Total: ${data.total}`;
+  } catch (err) {
+    statusEl.textContent = 'Gagal mendeteksi, coba lagi.';
+  } finally {
+    shutter.disabled = galBtn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>

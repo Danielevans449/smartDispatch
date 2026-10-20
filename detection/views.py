@@ -5,22 +5,25 @@ from pathlib import Path
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from PIL import Image, ImageDraw
-from torchvision.ops import box_iou
+from PIL import Image, ImageDraw, ImageOps
 from ultralytics import YOLO
 
 ML_DIR = Path(__file__).resolve().parent / "ml"
 
-models = {
-    "pipe": YOLO(str(ML_DIR / "pipe.pt")),
-    "hollow": YOLO(str(ML_DIR / "hollow.pt")),
-}
+# satu model, dua class (Hollow dan Pipe)
+model = YOLO(str(ML_DIR / "pipe_hollow.pt"))
+print("CLASS MODEL:", model.names)
 
-CONF = 0.7
+CONF = 0.5
+WARNA = {"pipe": (0, 200, 0), "hollow": (255, 140, 0)}
 
 
 def index(request):
     return render(request, "detection/index.html")
+
+
+def ambil_foto(request):
+    return render(request, "detection/ambil_foto.html")
 
 
 @csrf_exempt  # sementara buat testing
@@ -28,26 +31,21 @@ def detect(request):
     if request.method != "POST" or "image" not in request.FILES:
         return JsonResponse({"error": "Kirim file dengan key 'image' via POST"}, status=400)
 
-    img = Image.open(request.FILES["image"]).convert("RGB")
+    # exif_transpose biar foto dari HP nggak miring/kebalik
+    img = ImageOps.exif_transpose(Image.open(request.FILES["image"])).convert("RGB")
 
-    r_pipe = models["pipe"].predict(img, conf=CONF, verbose=False)[0]
-    r_hollow = models["hollow"].predict(img, conf=CONF, verbose=False)[0]
+    r = model.predict(img, conf=CONF, verbose=False)[0]
 
-    pipe_boxes = r_pipe.boxes.xyxy
-    hollow_boxes = r_hollow.boxes.xyxy
-
-    # buang kotak hollow yang numpuk dengan kotak pipe
-    if len(pipe_boxes) and len(hollow_boxes):
-        iou = box_iou(hollow_boxes, pipe_boxes)
-        hollow_boxes = hollow_boxes[iou.max(dim=1).values < 0.5]
-
-    # gambar kotak di foto
     draw = ImageDraw.Draw(img)
     tebal = max(3, img.width // 250)
-    for b in pipe_boxes.tolist():
-        draw.rectangle(b, outline=(0, 200, 0), width=tebal)
-    for b in hollow_boxes.tolist():
-        draw.rectangle(b, outline=(255, 140, 0), width=tebal)
+    jumlah = {"pipe": 0, "hollow": 0}
+
+    for box, cls in zip(r.boxes.xyxy.tolist(), r.boxes.cls.tolist()):
+        nama = r.names[int(cls)].lower()  # "Hollow" -> "hollow"
+        if nama not in jumlah:
+            continue
+        jumlah[nama] += 1
+        draw.rectangle(box, outline=WARNA[nama], width=tebal)
 
     # kecilkan biar ringan dikirim balik
     img.thumbnail((1280, 1280))
@@ -55,10 +53,8 @@ def detect(request):
     img.save(buf, "JPEG", quality=85)
     data_url = "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
 
-    jml_pipe = len(pipe_boxes)
-    jml_hollow = len(hollow_boxes)
     return JsonResponse({
-        "total": jml_pipe + jml_hollow,
-        "per_jenis": {"steel_pipe": jml_pipe, "steel_hollow": jml_hollow},
+        "total": jumlah["pipe"] + jumlah["hollow"],
+        "per_jenis": {"steel_pipe": jumlah["pipe"], "steel_hollow": jumlah["hollow"]},
         "image": data_url,
     })
