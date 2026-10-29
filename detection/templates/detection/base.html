@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Smart Dispatch{% endblock %}</title>
+<style>
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#f1f5f9;color:#12303a}
+header{background:#0b6b66;color:#fff;padding:18px 20px 24px;border-radius:0 0 22px 22px}
+header h1{font-size:18px} header p{font-size:12px;opacity:.8;margin-top:2px}
+.wrap{max-width:520px;margin:16px auto 32px;padding:0 16px}
+.card{background:#fff;border:1px solid #d9e2ec;border-radius:16px;padding:16px}
+label{font-size:12px;font-weight:600;display:block;margin:12px 0 4px}
+input,select{width:100%;padding:12px;border:1px solid #d9e2ec;border-radius:10px;background:#f6f9fb;font-size:14px}
+input[readonly]{color:#64808b}
+.dua{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cek{display:flex;gap:8px;align-items:center;font-size:14px;font-weight:400;margin:0;padding:4px 0}
+.cek input{width:auto}
+button,.btn{display:block;width:100%;margin-top:16px;padding:13px;border:0;border-radius:10px;background:#0b6b66;color:#fff;font-weight:700;font-size:15px;cursor:pointer;text-align:center;text-decoration:none}
+.t{width:100%;border-collapse:collapse;font-size:14px}
+.t td{padding:5px 0;vertical-align:top}
+.t td:first-child{color:#64808b;width:42%}
+</style>
+</head>
+<body>
+<header><h1>{% block judul %}{% endblock %}</h1><p>{% block sub %}{% endblock %}</p></header>
+<div class="wrap">{% block isi %}{% endblock %}</div>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{% extends "detection/base.html" %}
+{% block title %}Buat DO{% endblock %}
+{% block judul %}Buat Delivery Order{% endblock %}
+{% block sub %}{{ d.kapal }} → {{ d.tujuan }}{% endblock %}
+{% block isi %}
+<form method="post" class="card">
+  {% csrf_token %}
+  <div class="dua">
+    <div><label>No D/O</label><input value="{{ no_do }}" readonly></div>
+    <div><label>Trip</label><input value="{{ trip }}" readonly></div>
+  </div>
+  <label>Petugas pengirim</label>
+  <input value="{{ request.user.get_full_name|default:request.user.username }}" readonly>
+  <label>Palka</label><input name="palka" placeholder="Contoh: H-1">
+  <div class="dua">
+    <div><label>No. truk</label><input name="no_truk" placeholder="BP 1234 XX"></div>
+    <div><label>Driver</label>
+      <select name="driver"><option value="">-- pilih --</option>
+        {% for u in drivers %}<option value="{{ u.id }}">{{ u.get_full_name|default:u.username }}</option>{% endfor %}
+      </select></div>
+  </div>
+  <button type="submit">Lanjut Ambil Foto</button>
+</form>
+{% endblock %}

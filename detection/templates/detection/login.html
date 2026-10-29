@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Masuk - Smart Dispatch</title>
+<style>
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#f1f5f9;color:#12303a;min-height:100dvh;display:grid;place-items:center}
+.box{width:100%;max-width:420px;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 8px 30px #0b6b6620}
+.top{background:#0b6b66;color:#fff;padding:36px 24px 44px;border-radius:0 0 28px 28px}
+.top h1{font-size:22px} .top p{font-size:13px;opacity:.8;margin-top:4px}
+form{padding:24px}
+label{font-size:12px;font-weight:600;display:block;margin:12px 0 4px}
+input{width:100%;padding:12px;border:1px solid #d9e2ec;border-radius:10px;background:#f6f9fb;font-size:14px}
+button{width:100%;margin-top:20px;padding:13px;border:0;border-radius:10px;background:#0b6b66;color:#fff;font-weight:700;font-size:15px;cursor:pointer}
+.err{background:#fee2e2;color:#b91c1c;padding:10px;border-radius:8px;font-size:13px;margin-bottom:6px}
+.foot{text-align:center;font-size:12px;color:#64808b;padding:0 24px 22px}
+@media(max-width:480px){body{display:block;background:#fff}.box{box-shadow:none;border-radius:0;min-height:100dvh}}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="top"><h1>Selamat Datang</h1><p>Masuk untuk mulai verifikasi</p></div>
+  <form method="post">
+    {% csrf_token %}
+    {% if form.errors %}<div class="err">Email atau kata sandi salah.</div>{% endif %}
+    <label>Email</label>
+    <input type="text" name="username" placeholder="nama@email.com" autocapitalize="none" autocomplete="username" spellcheck="false" autofocus required>
+    <label>Kata sandi</label>
+    <input type="password" name="password" placeholder="Masukkan kata sandi" autocomplete="current-password" required>
+    <button type="submit">Masuk</button>
+  </form>
+  <p class="foot">Belum punya akun? Hubungi Admin.</p>
+</div>
+</body>
+</html>

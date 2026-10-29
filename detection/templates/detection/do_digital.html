@@ -1,0 +1,32 @@
+{% extends "detection/base.html" %}
+{% block title %}DO {{ do.no_do }}{% endblock %}
+{% block judul %}Delivery Order{% endblock %}
+{% block sub %}No D/O : {{ do.no_do }} · Trip : {{ do.nomor_trip }}{% endblock %}
+{% block isi %}
+<div class="card">
+  <table class="t">
+    <tr><td>No D/O</td><td>: {{ do.no_do }}</td></tr>
+    <tr><td>Trip</td><td>: {{ do.nomor_trip }}</td></tr>
+    <tr><td>Shipper</td><td>: {{ do.distribusi.shipper }}</td></tr>
+    <tr><td>Consignee</td><td>: {{ do.distribusi.konsignee }}</td></tr>
+    <tr><td>Vessel/Voy. No</td><td>: {{ do.distribusi.kapal }}</td></tr>
+    <tr><td>Tujuan</td><td>: {{ do.distribusi.tujuan }}</td></tr>
+    <tr><td>Palka</td><td>: {{ do.palka|default:"-" }}</td></tr>
+    <tr><td>Truck No.</td><td>: {{ do.no_truk|default:"-" }}</td></tr>
+    <tr><td>Driver</td><td>: {% if do.driver %}{{ do.driver.get_full_name|default:do.driver.username }}{% else %}-{% endif %}</td></tr>
+    <tr><td>Delivery Date</td><td>: {{ do.dibuat|date:"l, d/m/Y" }}</td></tr>
+    <tr><td>Time</td><td>: {{ do.dibuat|date:"H:i" }}</td></tr>
+  </table>
+  <table class="t" style="margin-top:16px;border-top:1px solid #d9e2ec">
+    <tr><td><b>Description</b></td><td><b>Quantity</b></td></tr>
+    {% if do.jumlah_pipe %}<tr><td>Steel Pipe</td><td>{{ do.jumlah_pipe }} pcs</td></tr>{% endif %}
+    {% if do.jumlah_hollow %}<tr><td>Steel Hollow</td><td>{{ do.jumlah_hollow }} pcs</td></tr>{% endif %}
+    {% if not do.jumlah_pipe and not do.jumlah_hollow %}<tr><td colspan="2">Belum ada barang terverifikasi</td></tr>{% endif %}
+  </table>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:20px;font-size:12px;text-align:center">
+    <div>Sender<br><b>{{ do.pengirim.get_full_name|default:do.pengirim.username }}</b></div>
+    <div>Driver<br><b>{% if do.driver %}{{ do.driver.get_full_name|default:do.driver.username }}{% else %}-{% endif %}</b></div>
+    <div>Receiver<br><b>{% if do.penerima %}{{ do.penerima.get_full_name|default:do.penerima.username }}{% else %}(belum diterima){% endif %}</b></div>
+  </div>
+</div>
+{% endblock %}

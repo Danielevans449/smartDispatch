@@ -1,0 +1,22 @@
+{% extends "detection/base.html" %}
+{% block title %}Distribusi Baru{% endblock %}
+{% block judul %}Distribusi Baru{% endblock %}
+{% block sub %}Satu distribusi = satu kapal{% endblock %}
+{% block isi %}
+<form method="post" class="card">
+  {% csrf_token %}
+  <label>Kapal (Vessel/Voy. No)</label><input name="kapal" required>
+  <label>Perusahaan pengirim (Shipper)</label><input name="shipper" required>
+  <label>Perusahaan penerima (Consignee)</label><input name="konsignee" required>
+  <label>Tujuan pengiriman</label><input name="tujuan" required>
+  <div class="dua">
+    <div><label>Petugas pengirim lain</label>
+      {% for u in petugas %}<label class="cek"><input type="checkbox" name="pengirim" value="{{ u.id }}">{{ u.get_full_name|default:u.username }}</label>{% endfor %}
+    </div>
+    <div><label>Petugas penerima</label>
+      {% for u in petugas %}<label class="cek"><input type="checkbox" name="penerima" value="{{ u.id }}">{{ u.get_full_name|default:u.username }}</label>{% endfor %}
+    </div>
+  </div>
+  <button type="submit">Lanjut Buat DO</button>
+</form>
+{% endblock %}

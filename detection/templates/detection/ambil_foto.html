@@ -2,170 +2,222 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Ambil Foto</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ambil Foto - Smart Dispatch</title>
 <style>
-  :root{--navy:#14304a;--teal:#0b7a75;--bg:#f2f6fa;--box:#e4ecf4;--muted:#6b7c8c}
-  *{box-sizing:border-box;margin:0}
-  body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--navy);
-       min-height:100dvh;max-width:480px;margin:auto;padding-bottom:80px}
-  header{background:#fff;padding:14px 16px;display:flex;align-items:center;gap:12px}
-  header a{color:var(--navy);text-decoration:none;font-size:22px}
-  header h1{font-size:17px}
-  header small{color:var(--muted);font-size:12px}
-  main{padding:16px;display:flex;flex-direction:column;align-items:center;gap:14px}
-  .view{width:100%;aspect-ratio:3/4;border:2px solid var(--navy);border-radius:20px;
-        background:var(--box);overflow:hidden;display:flex;align-items:center;
-        justify-content:center;color:var(--muted);font-size:14px;font-weight:600;
-        text-align:center;padding:12px}
-  .view img{width:100%;height:100%;object-fit:contain;display:none}
-  .view .ic{font-size:34px;margin-bottom:8px}
-  #status{min-height:22px;font-size:14px;font-weight:600;text-align:center}
-  .ctrl{width:100%;display:grid;grid-template-columns:1fr auto 1fr;align-items:center}
-  #galBtn{justify-self:end;margin-right:26px;width:46px;height:46px;border-radius:50%;
-          border:1px solid #cfd9e3;background:#fff;font-size:20px}
-  #shutter{width:76px;height:76px;border-radius:50%;background:#fff;
-           border:8px solid var(--teal)}
-  #shutter:active{transform:scale(.93)}
-  button:disabled{opacity:.5}
-  nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;
-      background:#fff;border-top:1px solid #e1e8ef;display:flex;justify-content:space-around;
-      padding:8px 0 calc(8px + env(safe-area-inset-bottom))}
-  nav a{text-decoration:none;color:var(--muted);font-size:11px;text-align:center;font-weight:600}
-  nav a span{display:block;font-size:20px}
-  nav a.on{color:var(--teal)}
-  .view video{width:100%;height:100%;object-fit:cover;display:none}
+:root{--teal:#0b6b66;--teal-d:#084f4b;--bg:#f1f5f9;--line:#d9e2ec;--txt:#12303a;--mut:#64808b;--ok:#16a34a}
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--txt)}
+.shell{display:grid;min-height:100dvh;grid-template-areas:"h" "m" "n";grid-template-rows:auto 1fr auto}
+header{grid-area:h;background:var(--teal);color:#fff;padding:18px 20px 24px;border-radius:0 0 22px 22px}
+header h1{font-size:18px} header p{font-size:12px;opacity:.8;margin-top:2px}
+main{grid-area:m;padding:16px;width:100%;max-width:1000px;margin:0 auto}
+.grid{display:grid;gap:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px}
+#viewport{position:relative;aspect-ratio:3/4;background:#e6edf3;border:2px solid var(--teal-d);border-radius:18px;overflow:hidden;display:grid;place-items:center}
+#viewport video,#viewport img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:none}
+#hint{color:var(--mut);font-size:13px;text-align:center;padding:0 24px}
+#loading{position:absolute;inset:0;background:#000a;color:#fff;display:none;place-items:center;font-weight:600}
+.ctrl{display:flex;justify-content:center;align-items:center;gap:28px;margin-top:6px}
+.shutter{width:64px;height:64px;border-radius:50%;border:5px solid var(--teal);background:#fff;cursor:pointer}
+.galeri{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:20px;cursor:pointer}
+.btn{width:100%;padding:12px;border-radius:10px;border:1.5px solid var(--teal);background:#fff;color:var(--teal);font-weight:700;font-size:14px;cursor:pointer}
+.btn.p{background:var(--teal);color:#fff}
+.btn+.btn{margin-top:8px}
+.state{display:none} .state.on{display:block}
+.total{text-align:center;margin-bottom:12px}
+.total b{font-size:40px;color:var(--teal);display:block;line-height:1}
+.row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.step{display:flex;align-items:center;gap:10px}
+.step button{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:18px;cursor:pointer}
+.step input{width:56px;text-align:center;padding:6px;border:1px solid var(--line);border-radius:8px;font-size:16px}
+.note{font-size:12px;color:var(--mut);margin:8px 0 14px}
+.done{text-align:center;padding:10px 0}
+.done .c{width:64px;height:64px;border-radius:50%;background:#dcfce7;color:var(--ok);font-size:32px;display:grid;place-items:center;margin:0 auto 10px}
+nav{grid-area:n;display:flex;justify-content:space-around;background:#fff;border-top:1px solid var(--line);position:sticky;bottom:0;padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px))}
+nav a{display:grid;justify-items:center;gap:2px;font-size:11px;color:var(--mut);text-decoration:none}
+nav a.on{color:var(--teal);font-weight:700}
+.brand{display:none}
+@media(min-width:900px){
+ .shell{grid-template-areas:"n h" "n m";grid-template-columns:230px 1fr;grid-template-rows:auto 1fr}
+ header{border-radius:0;padding:22px 32px}
+ main{padding:24px 32px;max-width:none;margin:0}
+ .grid{grid-template-columns:1.2fr 1fr;align-items:start}
+ #viewport{aspect-ratio:4/3}
+ nav{flex-direction:column;justify-content:flex-start;gap:6px;background:var(--teal-d);border:0;padding:24px 14px;position:sticky;top:0;height:100dvh}
+ nav a{display:flex;gap:10px;font-size:14px;color:#cfe5e3;padding:10px 12px;border-radius:10px}
+ nav a.on{background:#ffffff22;color:#fff}
+ .brand{display:block;color:#fff;font-weight:800;font-size:18px;padding:0 12px 18px}
+}
 </style>
 </head>
 <body>
+<div class="shell">
+  <header>
+    <h1>Ambil Foto</h1>
+    <p id="infoDO">Arahkan kamera ke tumpukan barang</p>
+  </header>
 
-<header>
-  <a href="javascript:history.back()">‹</a>
-  <div><h1>Ambil Foto</h1><small>Steel Pipe · Batch 2</small></div>
-</header>
-
-<main>
-    <div class="view">
+  <main>
+    <div class="grid">
+      <div id="viewport">
         <video id="video" autoplay playsinline muted></video>
-        <img id="preview" alt="">
-        <div id="hint"><div class="ic">📷</div>Arahkan kamera ke tumpukan barang</div>
+        <img id="preview" alt="Hasil deteksi">
+        <p id="hint">Mengaktifkan kamera…</p>
+        <div id="loading">Mendeteksi…</div>
+      </div>
+
+      <div class="card">
+        <!-- 1. siap foto -->
+        <div class="state on" id="s-foto">
+          <div class="ctrl">
+            <button class="galeri" id="btnGaleri" title="Pilih dari galeri">🖼️</button>
+            <button class="shutter" id="btnShutter" title="Ambil foto"></button>
+          </div>
+          <p class="note" style="text-align:center">Pastikan cahaya cukup dan semua barang terlihat.</p>
+        </div>
+
+        <!-- 2. hasil deteksi -->
+        <div class="state" id="s-hasil">
+          <div class="total"><b id="total">0</b>barang terdeteksi</div>
+          <div class="row"><span>Steel Pipe</span>
+            <div class="step"><button data-k="pipe" data-d="-1">−</button><input id="pipe" type="number" min="0" value="0"><button data-k="pipe" data-d="1">+</button></div></div>
+          <div class="row"><span>Steel Hollow</span>
+            <div class="step"><button data-k="hollow" data-d="-1">−</button><input id="hollow" type="number" min="0" value="0"><button data-k="hollow" data-d="1">+</button></div></div>
+          <p class="note">Kalau hitungan AI meleset, ubah jumlahnya dulu sebelum disimpan.</p>
+          <button class="btn" id="btnUlang">Ambil Ulang</button>
+          <button class="btn p" id="btnSimpan">Simpan</button>
+        </div>
+
+        <!-- 3. tersimpan -->
+        <div class="state" id="s-done">
+          <div class="done"><div class="c">✓</div><b>Foto Tersimpan</b>
+          <p class="note" id="doneInfo"></p></div>
+          <button class="btn" onclick="location.href='/do/{{ do.id }}/'">Lihat DO Digital</button>
+          <button class="btn" id="btnLagi">Foto Barang Berikutnya</button>
+          <button class="btn p" id="btnLanjut">Selesai · Lanjut Trip Berikutnya</button>
+        </div>
+      </div>
     </div>
+  </main>
 
-  <div id="status"></div>
+  <nav>
+    <div class="brand">Smart Dispatch</div>
+    <a href="#">🏠<span>Beranda</span></a>
+    <a href="#" class="on">🚚<span>Pengiriman</span></a>
+    <a href="#">📦<span>Penerima</span></a>
+    <a href="#">🕘<span>Riwayat</span></a>
+    <a href="#">👤<span>Profil</span></a>
+  </nav>
+</div>
 
-  <div class="ctrl">
-    <button id="galBtn" type="button">🖼️</button>
-    <button id="shutter" type="button" aria-label="Ambil foto"></button>
-    <div></div>
-  </div>
-
-  <input type="file" id="camInput" accept="image/*" capture="environment" hidden>
-  <input type="file" id="galInput" accept="image/*" hidden>
-</main>
-
-<nav>
-  <a href="#"><span>🏠</span>Beranda</a>
-  <a href="#" class="on"><span>🚚</span>Pengirim</a>
-  <a href="#"><span>📦</span>Penerima</a>
-  <a href="#"><span>🕒</span>Riwayat</a>
-  <a href="#"><span>👤</span>Profil</a>
-</nav>
+<input type="file" id="fileCam" accept="image/*" capture="environment" hidden>
+<input type="file" id="fileGal" accept="image/*" hidden>
 
 <script>
-const camInput = document.getElementById('camInput');
-const galInput = document.getElementById('galInput');
-const preview  = document.getElementById('preview');
-const video    = document.getElementById('video');
-const hint     = document.getElementById('hint');
-const statusEl = document.getElementById('status');
-const shutter  = document.getElementById('shutter');
-const galBtn   = document.getElementById('galBtn');
+const $ = s => document.querySelector(s);
+const nomorDO = "{{ do.id }}";
+$("#infoDO").textContent = "No D/O : {{ do.no_do }} · Trip : {{ do.nomor_trip }} · {{ do.distribusi.kapal }}";
 
-let liveOK = false;
+let stream = null, foto = null, fotoHasil = null, aiPipe = 0, aiHollow = 0;
 
-async function mulaiKamera() {
-  // di http biasa, mediaDevices nggak ada -> otomatis pakai cara cadangan
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: {facingMode: {ideal: 'environment'}},
-      audio: false
-    });
-    video.srcObject = stream;
-    video.style.display = 'block';
-    hint.style.display = 'none';
-    liveOK = true;
-  } catch (e) {
-    liveOK = false;
+function tampil(id){
+  document.querySelectorAll(".state").forEach(e => e.classList.toggle("on", e.id === id));
+}
+function hitungTotal(){
+  $("#total").textContent = (+$("#pipe").value || 0) + (+$("#hollow").value || 0);
+}
+
+async function nyalakanKamera(){
+  $("#preview").style.display = "none";
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+    $("#video").srcObject = stream;
+    $("#video").style.display = "block";
+    $("#hint").style.display = "none";
+  }catch(e){
+    // http dari HP biasanya diblok: pakai kamera bawaan lewat input file
+    stream = null;
+    $("#video").style.display = "none";
+    $("#hint").style.display = "block";
+    $("#hint").textContent = "Tekan tombol bulat untuk membuka kamera HP, atau pilih dari galeri.";
   }
 }
-mulaiKamera();
 
-function tampilkan(file) {
-  preview.src = URL.createObjectURL(file);
-  preview.style.display = 'block';
-  video.style.display = 'none';
-  hint.style.display = 'none';
-  kirim(file);
-}
-
-shutter.onclick = () => {
-  if (!liveOK) { camInput.click(); return; }   // cadangan: kamera bawaan HP
-  const c = document.createElement('canvas');
-  c.width = video.videoWidth;
-  c.height = video.videoHeight;
-  c.getContext('2d').drawImage(video, 0, 0);
-  c.toBlob(blob => {
-    tampilkan(new File([blob], 'foto.jpg', {type: 'image/jpeg'}));
-  }, 'image/jpeg', 0.9);
-};
-
-galBtn.onclick = () => galInput.click();
-
-[camInput, galInput].forEach(inp => inp.addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  tampilkan(file);
-  inp.value = '';
-}));
-
-// tap foto hasil buat balik ke kamera live
-preview.onclick = () => {
-  if (!liveOK) return;
-  preview.style.display = 'none';
-  video.style.display = 'block';
-  statusEl.textContent = '';
-};
-
-async function kirim(file) {
-  statusEl.textContent = 'Mendeteksi...';
-  shutter.disabled = galBtn.disabled = true;
-
+async function kirim(blob){
+  foto = blob;
+  $("#loading").style.display = "grid";
   const fd = new FormData();
-  fd.append('image', file);
-
-  try {
-    const res = await fetch('/api/detect/', {
-      method: 'POST',
-      body: fd,
-      headers: {'X-CSRFToken': '{{ csrf_token }}'}
-    });
-    const data = await res.json();
-
-    if (!res.ok) {
-      statusEl.textContent = data.error || 'Terjadi kesalahan di server.';
-      return;
-    }
-
-    if (data.image) preview.src = data.image;
-    statusEl.textContent =
-      `Pipe: ${data.per_jenis.steel_pipe} | Hollow: ${data.per_jenis.steel_hollow} | Total: ${data.total}`;
-  } catch (err) {
-    statusEl.textContent = 'Gagal mendeteksi, coba lagi.';
-  } finally {
-    shutter.disabled = galBtn.disabled = false;
+  fd.append("image", blob, "foto.jpg");
+  try{
+    const res = await fetch("/api/detect/", {method:"POST", body:fd});
+    const d = await res.json();
+    if(!res.ok) throw new Error(d.error || "Gagal mendeteksi");
+    aiPipe = d.per_jenis.steel_pipe; aiHollow = d.per_jenis.steel_hollow;
+    $("#pipe").value = aiPipe; $("#hollow").value = aiHollow;
+    hitungTotal();
+    $("#preview").src = d.image;
+    fotoHasil = await (await fetch(d.image)).blob();
+    $("#preview").style.display = "block";
+    $("#video").style.display = "none";
+    $("#hint").style.display = "none";
+    if(stream) stream.getTracks().forEach(t => t.stop());
+    tampil("s-hasil");
+  }catch(e){
+    alert(e.message);
+  }finally{
+    $("#loading").style.display = "none";
   }
 }
+
+$("#btnShutter").onclick = () => {
+  if(!stream) return $("#fileCam").click();
+  const v = $("#video"), c = document.createElement("canvas");
+  c.width = v.videoWidth; c.height = v.videoHeight;
+  c.getContext("2d").drawImage(v, 0, 0);
+  c.toBlob(kirim, "image/jpeg", 0.9);
+};
+$("#btnGaleri").onclick = () => $("#fileGal").click();
+$("#fileCam").onchange = $("#fileGal").onchange = e => {
+  if(e.target.files[0]) kirim(e.target.files[0]);
+  e.target.value = "";
+};
+
+document.querySelectorAll(".step button").forEach(b => b.onclick = () => {
+  const i = $("#" + b.dataset.k);
+  i.value = Math.max(0, (+i.value || 0) + +b.dataset.d);
+  hitungTotal();
+});
+$("#pipe").oninput = $("#hollow").oninput = hitungTotal;
+
+$("#btnUlang").onclick = () => { tampil("s-foto"); nyalakanKamera(); };
+$("#btnLagi").onclick = $("#btnUlang").onclick;
+$("#btnLanjut").onclick = () => location.href = "/buat-do/?distribusi={{ do.distribusi_id }}";
+
+$("#btnSimpan").onclick = async () => {
+  const btn = $("#btnSimpan");
+  btn.disabled = true;  // cegah kepencet dua kali
+  const fd = new FormData();
+  fd.append("foto", foto, "foto.jpg");
+  fd.append("foto_hasil", fotoHasil, "hasil.jpg");
+  fd.append("batch", nomorDO);
+  fd.append("pipe_ai", aiPipe); fd.append("hollow_ai", aiHollow);
+  fd.append("pipe_final", $("#pipe").value || 0);
+  fd.append("hollow_final", $("#hollow").value || 0);
+  try{
+    const res = await fetch("/api/simpan/", {method:"POST", body:fd});
+    const d = await res.json();
+    if(!res.ok) throw new Error(d.error || "Gagal menyimpan");
+    $("#doneInfo").textContent = "Foto tersimpan di D/O {{ do.no_do }} (" + d.total + " barang).";
+    tampil("s-done");
+  }catch(e){
+    alert("Gagal menyimpan: " + e.message);
+  }finally{
+    btn.disabled = false;
+  }
+};
+
+nyalakanKamera();
 </script>
 </body>
 </html>
